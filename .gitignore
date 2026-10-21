@@ -1,0 +1,24 @@
+# Python environment
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Private environment variables
+.env
+.env.*
+!.env.example
+
+# Personal research history
+search_history.json
+historysearch.json
+
+# Logs
+*.log
+
+# Editor settings
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db

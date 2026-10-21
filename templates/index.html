@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Deep Research AI Agent</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+
+    <div class="bg-grid"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">ResearchAI</span>
+            </div>
+
+            <div class="header-badge">Powered by Ollama AI</div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-heading">
+                <h3>Recent Searches</h3>
+            </div>
+
+            <div id="history-list"></div>
+        </aside>
+
+        <!-- RIGHT MAIN CONTENT -->
+        <main class="main-content">
+
+           <section class="hero">
+    <p class="hero-eyebrow">DEEP RESEARCH AGENT</p>
+
+    <h1 class="hero-title">
+        Research<br>
+        <em>Smarter.</em>
+    </h1>
+
+    <p class="hero-subtitle">
+        Explore any topic with AI-powered research and insights.
+    </p>
+</section>
+
+            <!-- SEARCH -->
+            <section class="search-section">
+
+                <div class="search-card">
+
+                    <label for="topicInput" class="input-label">
+                        What would you like to research?
+                    </label>
+
+                    <div class="search-box">
+
+                        <span class="input-icon">⌕</span>
+
+                        <input
+                            type="text"
+                            id="topicInput"
+                            class="search-input"
+                            placeholder="Enter a research topic or question..."
+                            maxlength="300"
+                            autocomplete="off"
+                        >
+
+                        <label
+                            for="imageInput"
+                            class="image-upload-btn"
+                            title="Upload an image"
+                        >📎</label>
+
+                        <input
+                            type="file"
+                            id="imageInput"
+                            accept="image/png,image/jpeg,image/webp"
+                            hidden
+                        >
+
+                    </div>
+
+                    <!-- IMAGE PREVIEW -->
+                    <div
+                        id="imagePreviewContainer"
+                        class="image-preview-container"
+                        hidden
+                    >
+                        <img
+                            id="imagePreview"
+                            src=""
+                            alt="Selected image preview"
+                        >
+
+                        <button
+                            type="button"
+                            id="removeImageBtn"
+                            class="remove-image-btn"
+                            title="Remove image"
+                            aria-label="Remove image"
+                        >&times;</button>
+                    </div>
+
+                    <!-- SMALL RESEARCH BUTTON -->
+                    <div class="search-actions">
+                        <span class="search-note">
+                            Web research · AI image analysis
+                        </span>
+
+                        <button
+                            id="researchBtn"
+                            class="research-btn"
+                            type="button"
+                            onclick="startResearch()"
+                        >
+                            <span class="btn-text">Research</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                    </div>
+
+                    <div class="search-hints">
+                        <span class="hint-label">Try:</span>
+
+                        <button
+                            class="hint-chip"
+                            type="button"
+                            onclick="fillTopic('Quantum computing applications')"
+                        >Quantum computing</button>
+
+                        <button
+                            class="hint-chip"
+                            type="button"
+                            onclick="fillTopic('AI in healthcare')"
+                        >AI in healthcare</button>
+
+                        <button
+                            class="hint-chip"
+                            type="button"
+                            onclick="fillTopic('Renewable energy future')"
+                        >Renewable energy</button>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- PROGRESS -->
+            <section id="progressSection" class="progress-section" hidden>
+
+                <div class="progress-heading">
+                    <span class="loading-spinner"></span>
+                    <span id="progressTitle">Researching your topic...</span>
+                </div>
+
+                <div class="progress-steps">
+
+                    <div class="progress-step" id="step1">
+                        <span class="step-number">01</span>
+                        <span>Searching for information</span>
+                    </div>
+
+                    <div class="progress-step" id="step2">
+                        <span class="step-number">02</span>
+                        <span>Analyzing content</span>
+                    </div>
+
+                    <div class="progress-step" id="step3">
+                        <span class="step-number">03</span>
+                        <span>Generating your report</span>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ERROR -->
+            <div id="errorMessage" class="error-message" hidden>
+                <span class="error-icon">!</span>
+                <span id="errorText"></span>
+            </div>
+
+            <!-- RESULTS -->
+            <section id="resultsSection" class="results-section" hidden>
+
+                <div class="results-header">
+                    <div>
+                        <p class="results-eyebrow">Research Report</p>
+                        <h2 id="resultsTopic" class="results-topic">
+                            Research Results
+                        </h2>
+                    </div>
+
+                    <button
+                        id="copyBtn"
+                        class="copy-btn"
+                        type="button"
+                        onclick="copyReport()"
+                    >Copy Report</button>
+                </div>
+
+                <div class="results-meta">
+                    <span id="sourcesCount" class="meta-badge">0 sources</span>
+                    <span id="modelBadge" class="meta-badge">AI model</span>
+                    <span id="tokensBadge" class="meta-badge">0 tokens</span>
+                </div>
+
+                <!-- IMAGE AND ANSWER -->
+                <div id="analysisLayout" class="analysis-layout">
+
+                    <div
+                        id="analyzedImageContainer"
+                        class="analyzed-image-container"
+                        hidden
+                    >
+                        <p class="image-result-label">Analyzed Image</p>
+
+                        <img
+                            id="analyzedImage"
+                            src=""
+                            alt="Image analyzed by AI"
+                        >
+                    </div>
+
+                    <article class="report-card">
+                        <div id="reportContent" class="report-content"></div>
+                    </article>
+
+                </div>
+
+                <!-- SOURCES -->
+                <section id="sourcesPanel" class="sources-panel">
+
+                    <div class="sources-heading">
+                        <h3>Sources</h3>
+                    </div>
+
+                    <div id="sourcesList" class="sources-list"></div>
+
+                </section>
+
+                <button
+                    class="reset-btn"
+                    type="button"
+                    onclick="resetAndFocus()"
+                >
+                    Research Another Topic <span>→</span>
+                </button>
+
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <p>Deep Research AI Agent · Powered by local AI models</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+</body>
+</html>
+```
