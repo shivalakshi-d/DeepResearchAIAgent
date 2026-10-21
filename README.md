@@ -1,4 +1,5 @@
 # Deep Research AI Agent
+![Deep Research AI Agent](deep-research-ai-agent.png)
 ## 📌About the Project 
 Deep Research AI Agent is an AI-powered research assistant designed to make online research easier and more efficient.
 
