@@ -4,10 +4,8 @@ requests==2.32.3
 beautifulsoup4==4.12.3
 python-dotenv==1.0.1
 lxml==5.2.2
-duckduckgo-search==6.2.1
 gunicorn
 Flask-CORS
 langdetect==1.0.9
 ollama
 ddgs
-
