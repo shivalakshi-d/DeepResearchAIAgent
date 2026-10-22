@@ -8,11 +8,10 @@ import ollama
 
 logger = logging.getLogger(__name__)
 
-# Use Ollama Cloud when OLLAMA_API_KEY is configured.
-# Otherwise, use the local Ollama installation for local development.
-
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+MODEL_NAME = os.getenv("OLLAMA_MODEL", "gemma4:cloud")
 
+# Connect to Ollama Cloud when an API key is configured.
 if OLLAMA_API_KEY:
     client = ollama.Client(
         host="https://ollama.com",
@@ -20,18 +19,13 @@ if OLLAMA_API_KEY:
             "Authorization": f"Bearer {OLLAMA_API_KEY}"
         },
     )
-    MODEL_NAME = os.getenv("OLLAMA_MODEL", "gemma4")
 else:
+    # Local development fallback.
     client = ollama.Client()
     MODEL_NAME = os.getenv("OLLAMA_MODEL", "phi3")
 
 
-# =========================================
-# TEXT RESEARCH SUMMARIZER
-# =========================================
-
 def summarize_research(topic, articles):
-
     try:
         content = ""
 
@@ -39,27 +33,20 @@ def summarize_research(topic, articles):
             text = article.get("content", "")[:500]
 
             if text:
-                content += (
-                    f"\nSOURCE {index}:\n"
-                    f"{text}\n"
-                )
+                content += f"\nSOURCE {index}:\n{text}\n"
 
         prompt = f"""
 You are a helpful research assistant.
 
 Write a clear, concise research report about:
-
 {topic}
 
-Use the supplied source information where available.
-
-Organize the report using these sections:
+Organize the report into:
 1. Summary
 2. Key Points
 3. Conclusion
 
-Be accurate. Do not invent facts or claim that you verified information
-that is not present in the supplied source content.
+Use the supplied information and do not invent facts.
 
 SOURCE MATERIAL:
 {content}
@@ -74,10 +61,7 @@ SOURCE MATERIAL:
             },
         )
 
-        report = response.get(
-            "response",
-            "No report generated."
-        )
+        report = response.get("response", "No report generated.")
 
         total_tokens = (
             response.get("eval_count", 0)
@@ -103,12 +87,7 @@ SOURCE MATERIAL:
         }
 
 
-# =========================================
-# IMAGE ANALYSIS
-# =========================================
-
 def analyze_image(topic, image_bytes):
-
     try:
         question = topic or "Describe this image in detail."
 
@@ -120,14 +99,13 @@ Analyze the supplied image carefully.
 User's question:
 {question}
 
-Please provide:
+Provide:
 1. A description of what is visible.
-2. Important objects, text, and details that can be identified.
-3. An explanation of the image's purpose or meaning, if identifiable.
+2. Important objects, text, and details.
+3. The likely purpose or meaning, if identifiable.
 4. A clear conclusion.
 
-If some details are unclear, say so instead of guessing.
-Use simple, helpful language.
+If details are unclear, say so instead of guessing.
 """
 
         response = client.generate(
@@ -139,10 +117,7 @@ Use simple, helpful language.
             },
         )
 
-        report = response.get(
-            "response",
-            "No image analysis generated."
-        )
+        report = response.get("response", "No image analysis generated.")
 
         total_tokens = (
             response.get("eval_count", 0)
