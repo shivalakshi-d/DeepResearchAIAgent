@@ -1,11 +1,29 @@
 """
-Ollama text summarization and image analysis.
+Ollama Cloud text summarization and image analysis.
 """
 
 import logging
+import os
 import ollama
 
 logger = logging.getLogger(__name__)
+
+# Use Ollama Cloud when OLLAMA_API_KEY is configured.
+# Otherwise, use the local Ollama installation for local development.
+
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+
+if OLLAMA_API_KEY:
+    client = ollama.Client(
+        host="https://ollama.com",
+        headers={
+            "Authorization": f"Bearer {OLLAMA_API_KEY}"
+        },
+    )
+    MODEL_NAME = os.getenv("OLLAMA_MODEL", "gemma4")
+else:
+    client = ollama.Client()
+    MODEL_NAME = os.getenv("OLLAMA_MODEL", "phi3")
 
 
 # =========================================
@@ -47,14 +65,14 @@ SOURCE MATERIAL:
 {content}
 """
 
-        response = ollama.generate(
-    model="phi3",
-    prompt=prompt,
-    options={
-        "num_predict": 350,
-        "temperature": 0.3
-    }
-)
+        response = client.generate(
+            model=MODEL_NAME,
+            prompt=prompt,
+            options={
+                "num_predict": 350,
+                "temperature": 0.3,
+            },
+        )
 
         report = response.get(
             "response",
@@ -68,22 +86,25 @@ SOURCE MATERIAL:
 
         return {
             "report": report,
-            "model_used": "phi3",
+            "model_used": MODEL_NAME,
             "tokens_used": total_tokens,
         }
 
-    except Exception as error:
+    except Exception:
         logger.exception("Text summarization failed")
 
         return {
-            "report": f"Text summarization failed: {error}",
+            "report": (
+                "Text summarization failed. Please check the "
+                "Ollama Cloud API key, model availability, and service logs."
+            ),
             "model_used": "error",
             "tokens_used": 0,
         }
 
 
 # =========================================
-# IMAGE ANALYSIS USING LLAVA
+# IMAGE ANALYSIS
 # =========================================
 
 def analyze_image(topic, image_bytes):
@@ -109,10 +130,13 @@ If some details are unclear, say so instead of guessing.
 Use simple, helpful language.
 """
 
-        response = ollama.generate(
-            model="llava",
+        response = client.generate(
+            model=MODEL_NAME,
             prompt=prompt,
             images=[image_bytes],
+            options={
+                "temperature": 0.3,
+            },
         )
 
         report = response.get(
@@ -127,15 +151,18 @@ Use simple, helpful language.
 
         return {
             "report": report,
-            "model_used": "llava",
+            "model_used": MODEL_NAME,
             "tokens_used": total_tokens,
         }
 
-    except Exception as error:
+    except Exception:
         logger.exception("Image analysis failed")
 
         return {
-            "report": f"Image analysis failed: {error}",
+            "report": (
+                "Image analysis failed. Please check the Ollama Cloud "
+                "API key, model availability, and service logs."
+            ),
             "model_used": "error",
             "tokens_used": 0,
         }
